@@ -1,11 +1,16 @@
 {
   "name": "mp4reader",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "mp4解析器，按照标准进行解析，借鉴了mp4包的实现",
   "main": "index.js",
   "scripts": {
     "test": "node test.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zdong22/mp4reader.git"
+  },
+  "homepage": "https://github.com/zdong22/mp4reader",
   "keywords": [
     "mp4",
     "moov",
