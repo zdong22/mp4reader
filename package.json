@@ -1,0 +1,21 @@
+{
+  "name": "mp4reader",
+  "version": "0.1.1",
+  "description": "mp4解析器，按照标准进行解析，借鉴了mp4包的实现",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "mp4",
+    "moov",
+    "decoder",
+    "h264",
+    "h265",
+    "container",
+    "atom",
+    "ISO_IEC_14496-12"
+  ],
+  "author": "zdong22",
+  "license": "ISC"
+}
