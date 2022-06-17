@@ -223,7 +223,7 @@ async function Mp4DecodeFtyp(filename = ''){
 	}
 }
 
-async function Mp4DecoderAll (filename = ''){
+async function Mp4DecodeAll (filename = ''){
 	if(filename == ''){
 		return -1
 	}
@@ -884,11 +884,192 @@ function parse_udta(moov_buffer = Buffer.from([]),base_offset = 0){
 function time1904To1970 (UTC = 0){
 	return new Date(UTC  - 2082844800000).toLocaleString()
 }
+//传入配置参数
+async function Mp4DecodeByModule(filename = '' ,configOption = ['ftyp']){
+	if(typeof configOption != 'object' || filename == ''){
+		return -1
+	}
+	let option = {
+		ftyp : false,
+		moov : false,
+		mvhd : false,
+		trak : false,
+		tkhd : false,
+		mdia : false,
+		hdlr : false,
+		minf : false,
+		stbl : false,
+		stsd : false,
+		stts : false,
+		stss : false,
+		ctts : false,
+		stsc : false,
+		stsz : false,
+		stco : false,
+	}
+	configOption.forEach(el => {
+		if(option.hasOwnProperty(el)){
+			option[el] = true
+		}
+	})
+
+	let resdata = {}
+
+	let moovInfo = await Mp4FindMoov(filename)
+	// Object.assign(resdata , {...moovInfo})
+	let {size = 0, offset = 0} = moovInfo
+	if(size === 0 || moovInfo == -1){
+		return -1
+	}
+
+	let filehandle =  await fsPromise.open(filename,'r')
+	let buff = Buffer.alloc(size)
+	let { buffer:moov_buffer , bytesRead} =await filehandle.read(buff, 0, size, offset )
+	filehandle.close()
+	if(bytesRead == 0){
+		return  -1 
+	}
+
+	for(let key in option){
+		switch (key){
+			case 'ftyp':
+				if(option[key]){
+					let ftyp = await Mp4DecodeFtyp(filename)
+					Object.assign(resdata , {ftyp : ftyp})
+				}
+				break
+			case 'moov':
+				if(option[key]){
+					let mvhd = parse_mvhd(moov_buffer, offset)
+					let udta = parse_udta(moov_buffer, offset)
+					let trak = parse_trak(moov_buffer, offset)
+					Object.assign(resdata , {
+						moov:
+							{
+							...moovInfo,
+							mvhd: mvhd,
+							udta:udta,
+							trak:trak
+							}
+						})
+				}
+				break
+			case 'mvhd':
+				if(option[key]){
+					let mvhd = parse_mvhd(moov_buffer, offset)
+					Object.assign(resdata , {mvhd:mvhd})
+				}
+				break
+			case 'trak':
+				if(option[key]){
+					let trak = parse_trak(moov_buffer, offset)
+					Object.assign(resdata , {trak: trak})
+				}
+				break
+			case 'tkhd':
+			case 'mdia':
+			case 'hdlr':
+			case 'minf':
+			case 'stbl':
+			case 'stsd':
+			case 'stts':
+			case 'stss':
+			case 'ctts':
+			case 'stsc':
+			case 'stsz':
+			case 'stco':
+				if(option[key]){
+					let trak_offset_list = getTrackList(moov_buffer, offset)
+					let base_offset = offset
+					let box_data = []
+					trak_offset_list.forEach(ele=> {
+						let offsetB = ele
+						offsetB -= 4
+						let size = moov_buffer.readUInt32BE(offsetB ) //read 4 bytes unpacked N
+						let box_type = moov_buffer.slice(offsetB+4, offsetB + 8).toString() //read 4 bytes	
+							// 8 Bytes reserved;
+						let res = parse_exact_box(moov_buffer.slice(offsetB) ,offsetB + base_offset, key)
+						box_data.push(res)
+					});
+					let obj = {}
+					obj[key] = box_data
+					Object.assign(resdata , obj)
+				}
+				break;
+			default:
+				break;
+			
+		}
+
+	}
+	return resdata
+}
+
+function parse_exact_box(buffer = [] ,offset = 0, key = null){
+	switch(key){
+		case 'tkhd':
+			return parse_tkhd(buffer , offset )
+
+		case 'mdia':
+			return parse_mdia(buffer , offset )
+		
+		case 'hdlr':
+			return parse_hdlr(buffer , offset )
+		
+		case 'minf':
+			return parse_minf(buffer , offset )
+		
+		case 'stbl':
+			return parse_stbl(buffer , offset )
+		
+		case 'stsd':
+			return parse_stsd(buffer , offset )
+		
+		case 'stts':
+			return parse_stts(buffer , offset )
+		
+		case 'stss':
+			return parse_stss(buffer , offset )
+		
+		case 'ctts':
+			return parse_ctts(buffer , offset )
+		
+		case 'stsc':
+			return parse_stsc(buffer , offset )
+		
+		case 'stsz':
+			return parse_stsz(buffer , offset )
+		
+		case 'stco':
+			return parse_stco(buffer , offset )
+		
+	}
+	return 
+}
+//返回轨道的偏移量数组，可以明确知道有几条轨道
+function getTrackList (moov_buffer = Buffer.from([]),base_offset = 0){
+		let trak = []
+		// console.log("TRAK");
+		// 这里比较特殊，可能有多个trak，必须找出所有trak
+		let trak_offset_list = []
+		for(let i = 0;i< moov_buffer.length;){
+			let offset = moov_buffer.indexOf('trak',i)
+			if(offset <  0){
+				break;
+			}
+			let size = moov_buffer.readUInt32BE(offset -4 )
+			trak_offset_list.push(offset)
+			i = offset + size - 4
+		}
+		return trak_offset_list
+		// console.log('trak_offset_list',trak_offset_list)
+}
 module.exports = {
 	FindStartCode2:FindStartCode2, 
 	FindStartCode3:FindStartCode3,
 	getFileInfoAsync:getFileInfoAsync,
 	Mp4FindMoov: Mp4FindMoov,
 	Mp4DecodeFtyp: Mp4DecodeFtyp,
-	Mp4DecoderAll: Mp4DecoderAll
+	Mp4DecodeAll: Mp4DecodeAll,
+	Mp4DecodeByModule:Mp4DecodeByModule
 }
