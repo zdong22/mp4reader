@@ -1,23 +1,24 @@
-## 简介
-这是一个mp4文件的结构解析包的nodejs实现，借鉴了[mp4包](https://www.npmjs.com/package/mp4 "mp4")的实现方法，但那位作者没有完成所有功能就停止更新了，这里是在他的基础上，重构了代码，但这个包更加纯粹，没有引用其它第三方包，之所以取名mp4reader，是向mp4reader软件的作者致敬，那个小工具很好用。拿到结构之后，就可以对关键帧进行解析，就可以实现nodejs对mp4的截帧。
+[English](readme.md) | [简体中文](readme_ch.md) 
+## introduce
+This is a nodejs implementation of the structure parsing package of mp4 files, borrowing the implementation method of [mp4 package] (https://www.npmjs.com/package/mp4 "mp4"), but the author stopped updating without completing all the functions, here is on his basis, refactored the code, but this package is more pure, does not reference other third-party packages, the reason for the name mp4reader, It is a tribute to the author of the mp4reader software, that gadget is very easy to use. After getting the structure, you can parse the keyframe, and you can realize the screenshot of MP4 by NodeJS.
 
-## 支持解析的属性
+## Properties that support resolution
 ![](./mp4container.svg)
 
-## 用法
+## usage
 
 ```
 //引入方法
 var { Mp4DecoderAll } = require( 'mp4reader')
 
-//使用异步方法解析所有支持的结构 
+// Use asynchronous methods to resolve all supported structures 
 let mp4Info = await Mp4DecodeAll('test.mp4')
 
 console.log(mp4Info)
-//打印结果对象 
-// -1 没有解析成功
+//Print the result object 
+// -1 No parsing succeeded
 
-//成功结果
+//Successful results
 {
   ftyp: {
     Start_offset: 0,
@@ -46,12 +47,12 @@ console.log(mp4Info)
 }
 
 //example 2
-//按模块导出
+//Export by module
 var { Mp4DecodeByModule } = require( 'mp4reader')
 let mp4Info = await Mp4DecodeByModule(filename ,['hdlr','ftyp']) 
 console.log(mp4Info)
 
-//成功结果
+//Successful results
 {
   ftyp: {
     Start_offset: 0,
@@ -83,23 +84,23 @@ console.log(mp4Info)
 }
 ```
 
-## 方法介绍
-- `Mp4DecoderAll()`  mp4结构信息全部导出
-- `Mp4DecodeFtyp()`  返回mp4结构ftyp盒子信息
-- `Mp4FindMoov()`  返回moov盒子信息：位置，尺寸
-- `getFileInfoAsync` 返回fs.stat类信息，包括文件大小等
-- `Mp4DecodeByModule(filename ,option: [])` 参数为文件名、盒子名数组，可选参数有ftyp moov  mvhd trak tkhd   mdia hdlr  minf  stbl stsd stts  stss ctts  stsc stsz stco
-比如Mp4DecodeByModule('test.mp4' ,['stsd', 'stss'])，上下级不冲突，但上级盒子会包含下级内容，如moov盒子将包含trak内容
+## Introduction of methods
+- `Mp4DecoderAll()`  All MP4 structure information is exported
+- `Mp4DecodeFtyp()`  Returns MP4 structure FPap box information
+- `Mp4FindMoov()`  Returns MOOV box information: location, dimensions
+- `getFileInfoAsync` Returns fs.stat class information, including file size
+- `Mp4DecodeByModule(filename ,option: [])` The parameters are an array of file names and box names, and optional parameters are ftyp  moov  mvhd trak tkhd   mdia hdlr  minf  stbl stsd stts  stss ctts  stsc stsz stco
+For example, Mp4DecodeByModule('test.mp4', ['stsd', 'stss']), the upper and lower levels do not conflict, but the parent box will contain the lower content, such as the moov box will contain trak content
 
-## 更新记录
+## Update records
 0.1.5
-【修复】模块导出方法修复
+【fix】Module export method fix
 0.1.4 
-【修改】主方法名称由 `Mp4DecoderAll` 改为 `Mp4DecodeAll`
-【新增】模块化导出方法  `Mp4DecodeByModule`
-【优化】调整了一下文档结构，更加合理
+【change】The main method name was changed from 'Mp4DecoderAll' to 'Mp4DecodeAll'
+【add】Modular export method 'Mp4DecodeByModule'
+【Optimization】Adjusted the document structure to be more reasonable
 
 0.1.3
-【优化】优化了一些问题
+【Optimization】Optimized some issues
 
 
