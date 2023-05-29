@@ -92,7 +92,8 @@ console.log(mp4Info)
 比如Mp4DecodeByModule('test.mp4' ,['stsd', 'stss'])，上下级不冲突，但上级盒子会包含下级内容，如moov盒子将包含trak内容
 
 ## 更新记录
-
+0.1.5
+【修复】模块导出方法修复
 0.1.4 
 【修改】主方法名称由 `Mp4DecoderAll` 改为 `Mp4DecodeAll`
 【新增】模块化导出方法  `Mp4DecodeByModule`

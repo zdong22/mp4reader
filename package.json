@@ -1,6 +1,6 @@
 {
   "name": "mp4reader",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "mp4解析器，按照标准进行解析，借鉴了mp4包的实现",
   "main": "index.js",
   "scripts": {
